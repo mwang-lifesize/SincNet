@@ -221,9 +221,11 @@ for epoch in range(N_epochs):
  
   loss_sum=0
   err_sum=0
+  print("starting epoch %i" % epoch)
 
   for i in range(N_batches):
 
+    print("starting epoch:", epoch, ", batch :" , i)
     [inp,lab]=create_batches_rnd(batch_size,data_folder,wav_lst_tr,snt_tr,wlen,lab_dict,0.2)
     pout=DNN2_net(DNN1_net(CNN_net(inp)))
     
@@ -255,6 +257,7 @@ for epoch in range(N_epochs):
 # Full Validation  new  
   if epoch%N_eval_epoch==0:
       
+   print("starting validation %i" % epoch)
    CNN_net.eval()
    DNN1_net.eval()
    DNN2_net.eval()
@@ -264,7 +267,12 @@ for epoch in range(N_epochs):
    err_sum_snt=0
    
    with torch.no_grad():  
+    # snt_te is 7464 too slow, let's hard code to be smaller
+    print("starting total range:",  snt_te)
+    snt_te = min(10 , snt_te)
+    print("reset snt_te to:",  snt_te)
     for i in range(snt_te):
+     print("starting validiation test :",  i)
        
      #[fs,signal]=scipy.io.wavfile.read(data_folder+wav_lst_te[i])
      #signal=signal.astype(float)/32768
@@ -287,7 +295,8 @@ for epoch in range(N_epochs):
      count_fr=0
      count_fr_tot=0
      while end_samp<signal.shape[0]:
-         sig_arr[count_fr,:]=signal[beg_samp:end_samp]
+         #print("validation end_samp:",  end_samp, ", signal.shape is:", signal.shape[0])
+         sig_arr[count_fr,:]=signal[beg_samp:end_samp].cpu()
          beg_samp=beg_samp+wshift
          end_samp=beg_samp+wlen
          count_fr=count_fr+1
