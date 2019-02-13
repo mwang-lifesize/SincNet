@@ -14,13 +14,16 @@ def ReadList(list_file):
  return list_sig
 
 
-def read_conf():
- 
+def read_conf(cfg_file=None):
  parser=OptionParser()
  parser.add_option("--cfg") # Mandatory
  (options,args)=parser.parse_args()
-
- cfg_file=options.cfg
+ if cfg_file is None:
+  cfg_file=options.cfg
+ if options.cfg is None and cfg_file is None:
+  #cfg_file='cfg/SincNet_TIMIT.cfg'
+  cfg_file='cfg/lifesize.cfg'
+ #cfg_file=options.cfg
  Config = ConfigParser.ConfigParser()
  Config.read(cfg_file)
 

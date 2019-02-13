@@ -6,6 +6,8 @@ import sys
 from torch.autograd import Variable
 import math
 
+device = 'cpu' # torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 def flip(x, dim):
     xsize = x.size()
     dim = x.dim() + dim if dim < 0 else dim
@@ -20,7 +22,8 @@ def sinc(band,t_right):
     y_right= torch.sin(2*math.pi*band*t_right)/(2*math.pi*band*t_right)
     y_left= flip(y_right,0)
 
-    y=torch.cat([y_left,Variable(torch.ones(1)).cuda(),y_right])
+    #y=torch.cat([y_left,Variable(torch.ones(1)).cuda(),y_right])
+    y=torch.cat([y_left,Variable(torch.ones(1)).to(device),y_right])
 
     return y
     
@@ -52,9 +55,11 @@ class sinc_conv(nn.Module):
 
     def forward(self, x):
         
-        filters=Variable(torch.zeros((self.N_filt,self.Filt_dim))).cuda()
+        #filters=Variable(torch.zeros((self.N_filt,self.Filt_dim))).cuda()
+        filters=Variable(torch.zeros((self.N_filt,self.Filt_dim))).to(device)
         N=self.Filt_dim
-        t_right=Variable(torch.linspace(1, (N-1)/2, steps=int((N-1)/2))/self.fs).cuda()
+        #t_right=Variable(torch.linspace(1, (N-1)/2, steps=int((N-1)/2))/self.fs).cuda()
+        t_right=Variable(torch.linspace(1, (N-1)/2, steps=int((N-1)/2))/self.fs).to(device)
         
         
         min_freq=50.0;
@@ -67,7 +72,8 @@ class sinc_conv(nn.Module):
 
         # Filter window (hamming)
         window=0.54-0.46*torch.cos(2*math.pi*n/N);
-        window=Variable(window.float().cuda())
+        #window=Variable(window.float().cuda())
+        window=Variable(window.float().to(device))
 
         
         for i in range(self.N_filt):
@@ -78,7 +84,8 @@ class sinc_conv(nn.Module):
 
             band_pass=band_pass/torch.max(band_pass)
 
-            filters[i,:]=band_pass.cuda()*window
+            #filters[i,:]=band_pass.cuda()*window
+            filters[i,:]=band_pass.to(device)*window
 
         out=F.conv1d(x, filters.view(self.N_filt,1,self.Filt_dim))
     

@@ -203,7 +203,8 @@ if pt_file!='none':
    checkpoint_load = torch.load(pt_file)
    CNN_net.load_state_dict(checkpoint_load['CNN_model_par'])
    DNN1_net.load_state_dict(checkpoint_load['DNN1_model_par'])
-   DNN2_net.load_state_dict(checkpoint_load['DNN2_model_par'])
+   #let DNN2 start from scracth?
+   #DNN2_net.load_state_dict(checkpoint_load['DNN2_model_par'])
 
 
 
@@ -269,9 +270,10 @@ for epoch in range(N_epochs):
    
    with torch.no_grad():  
     # snt_te is 7464 too slow, let's hard code to be smaller
-    print("starting total range:",  snt_te)
-    snt_te = min(100 , snt_te)
-    print("reset snt_te to:",  snt_te)
+    #print("starting total range:",  snt_te)
+    # for fine tune, we can set to 100?
+    snt_te = min(100, snt_te)
+    #print("reset snt_te to:",  snt_te)
     for i in range(snt_te):
      #print("starting validiation test :",  i)
        
