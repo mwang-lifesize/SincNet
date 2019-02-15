@@ -49,7 +49,11 @@ def create_batches_rnd(batch_size,data_folder,wav_lst,N_snt,wlen,lab_dict,fact_a
   snt_beg=np.random.randint(snt_len-wlen-1) #randint(0, snt_len-2*wlen-1)
   snt_end=snt_beg+wlen
   
-  sig_batch[i,:]=signal[snt_beg:snt_end]*rand_amp_arr[i]
+  # add some Gaussian noise? 
+  #rand_noise_amp = np.random.uniform(0,0.05,1)
+  #noise = np.random.normal(0, rand_noise_amp, wlen) 
+  noise = 0
+  sig_batch[i,:]=( signal[snt_beg:snt_end] + noise )*rand_amp_arr[i]
   lab_batch[i]=lab_dict[wav_lst[snt_id_arr[i]]]
   
  inp=Variable(torch.from_numpy(sig_batch).float().cuda().contiguous())

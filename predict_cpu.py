@@ -34,7 +34,7 @@ print()
 # Or create a tensor directly on the device
 #torch.rand(10, device=device)
 
-user_mapping = np.load("/var/www/html/record/user_mapping.npy").tolist()
+id_mapping = np.load("/var/www/html/record/id_mapping.npy").tolist()
 
 class predict_model:
 
@@ -246,8 +246,8 @@ class predict_model:
      sum_of_pout_for_all_chunks = torch.sum(pout_sm, dim=0)/torch.sum(pout_sm)
      best_user = 0
      best_prob = sum_of_pout_for_all_chunks[best_class]
-     best_user = user_mapping[best_class.item()]
-     #print( user_mapping )
+     best_user = id_mapping[best_class.item()]
+     #print( id_mapping )
      #loss_sum=loss_sum+loss.detach()
      #err_sum=err_sum+err.detach()
       

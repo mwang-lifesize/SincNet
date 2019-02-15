@@ -25,7 +25,7 @@ from predict_cpu import predict_model
 app = flask.Flask(__name__)
 model = None
 
-user_mapping = np.load("/var/www/html/record/user_mapping.npy").tolist()
+user_mapping = np.load("/var/www/html/record/id_mapping.npy").tolist()
 
 #np.random.seed(seed)
 
@@ -34,7 +34,8 @@ def load_model():
     # pre-trained on ImageNet and provided by Keras, but you can
     # substitute in your own networks just as easily)
     global model
-    model = predict_model("/home/mwang/Development/deep-learning/SincNet/exp/SincNet_lifesize/model_raw.pkl.lifesize")
+    #model = predict_model("/home/mwang/Development/deep-learning/SincNet/exp/SincNet_lifesize/model_raw.pkl.lifesize")
+    model = predict_model("/home/mwang/Development/deep-learning/SincNet/model_raw.pkl.lifesize")
     #model = predict_model("/home/mwang/Development/deep-learning/SincNet/exp/SincNet_libri/model_raw.pkl.amazon")
     #model = predict_model("/home/mwang/Development/deep-learning/SincNet/exp/SincNet_libri/model_raw.pkl.my_desktop")
 
