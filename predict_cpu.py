@@ -175,7 +175,7 @@ class predict_model:
      
     if pre_train_file != 'none':  
        print("loading pre trained file", pre_train_file)
-       checkpoint_load = torch.load(pre_train_file)
+       checkpoint_load = torch.load(pre_train_file, map_location=device)
        self.CNN_net.load_state_dict(checkpoint_load['CNN_model_par'])
        self.DNN1_net.load_state_dict(checkpoint_load['DNN1_model_par'])
        self.DNN2_net.load_state_dict(checkpoint_load['DNN2_model_par'])
@@ -203,18 +203,28 @@ class predict_model:
      # split signals into chunks
      beg_samp=0
      end_samp=self.wlen
-     
+
+     # if reminder is 0, total frame is N_fr, is not will not N_fr+1
      N_fr=int((signal.shape[0]-self.wlen)/(self.wshift))
-     
+
+     # fix probabily bug
+     remainder = (signal.shape[0]-self.wlen) % (self.wshift)
+     total_fr = N_fr
+     if remainder > 0:
+      total_fr = N_fr + 1
 
      sig_arr=np.zeros([self.Batch_dev,self.wlen])
      #pout=Variable(torch.zeros(N_fr+1,self.class_lay[-1]).float().cuda().contiguous())
-     pout=Variable(torch.zeros(N_fr+1,self.class_lay[-1]).float().to(self.device).contiguous())
+     #pout=Variable(torch.zeros(N_fr+1,self.class_lay[-1]).float().to(self.device).contiguous())
+     pout=Variable(torch.zeros(total_fr,self.class_lay[-1]).float().to(self.device).contiguous())
      count_fr=0
      count_fr_tot=0
+     # we split sig_arr  into small chunk, untill reaches batch_dev=128, to send for predict
+     print('sigal shape:', signal.shape[0], " batch_dev:", self.Batch_dev, " wshift:", self.wshift, " wlen:", self.wlen, " N_fr:", N_fr )
      while end_samp<signal.shape[0]:
          #print("validation end_samp:",  end_samp, ", signal.shape is:", signal.shape[0])
          sig_arr[count_fr,:]=signal[beg_samp:end_samp].cpu()
+         # shift just 10ms windows ( about 160 data points) for each chunk, the chunk has wlen=3600 data points
          beg_samp=beg_samp+self.wshift
          end_samp=beg_samp+self.wlen
          count_fr=count_fr+1
@@ -224,6 +234,7 @@ class predict_model:
              inp=Variable(torch.from_numpy(sig_arr).float().to(self.device).contiguous())
              #import pdb
              #pdb.set_trace()
+             # we do the batch predict with batch size = Batch_dev = 128
              pout[count_fr_tot-self.Batch_dev:count_fr_tot,:]=self.DNN2_net(self.DNN1_net(self.CNN_net(inp)))
              count_fr=0
              sig_arr=np.zeros([self.Batch_dev,self.wlen])
@@ -233,17 +244,44 @@ class predict_model:
       inp=Variable(torch.from_numpy(sig_arr[0:count_fr]).float().to(self.device).contiguous())
       pout[count_fr_tot-count_fr:count_fr_tot,:]=self.DNN2_net(self.DNN1_net(self.CNN_net(inp)))
 
-     #print(pout)
+     print('pout shape:', pout.shape )
+     print(pout)
+     #output of for each pout looks like
+     # count_fr is: 128
+     #[ [1.48138429e-11 2.25211291e-11 3.14523154e-15 ... 1.22290605e-17, ... ]  # for chunk0, log(softmax ouput, probablity) of this class/user
+     #  [3.09584164e-11 1.77962783e-11 2.11241983e-16 ... 3.93345516e-18 , ...]  # for chunk1, ...
+     #   ...
+     #   [2.74374579e-10 8.38070280e-10 2.53147953e-13 ... 4.95137133e-16, ...]  # for chunk N_fr+1
+     #  ]
 
+     # max of each row, [0] is value, while [1] is the index
      pred=torch.max(pout,dim=1)[1]
+     # to probabaly
+     #pred_val=torch.exp ( torch.max(pout,dim=1)[0] )
 
+     #print('pred shape:', pred.shape, "pred is:", pred, " with probability pred_val:", pred_val )
+     # output of pred
+     #pred : [4 4 4 4 4 4 4 4 4 4 4  ... 4, 4, 4 ]   total = multiple 128 + left_over_count_fr
+
+     # asumming this whole file belongs to one speaker
+     # sum the vertial coloumn, but it is a log(p), , torch.max( tensor, 0) the sencond 0 mean along dim/axis=0
      [val,best_class]=torch.max(torch.sum(pout,dim=0),0)
+
+     #print('val:', val, "best_calss:", best_class )
 
      #print( best_class.item() )
      #print( val )
-
+     # really probablity
      pout_sm = torch.exp(pout)
-     sum_of_pout_for_all_chunks = torch.sum(pout_sm, dim=0)/torch.sum(pout_sm)
+     pout_sm_sum = torch.sum(pout_sm, dim=0)
+     #[val_2,best_class_2]=torch.max( pout_sm_sum ,0)
+     #sum_of_pout_for_all_chunks = torch.sum(pout_sm, dim=0)/torch.sum(pout_sm)
+     sum_of_pout_for_all_chunks = pout_sm_sum/torch.sum(pout_sm)
+     #print('val_2:', val_2, "best_calss_2:", best_class_2 )
+
+     #print( " sum_of_pout_for_all_chunks : ", sum_of_pout_for_all_chunks )
+
+     #print("total:", torch.sum(pout_sm), ", total subtal:", torch.sum(pout_sm_sum), " should = N_fr+1:", N_fr+1 )
      best_user = 0
      best_prob = sum_of_pout_for_all_chunks[best_class]
      best_user = id_mapping[best_class.item()]

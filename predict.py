@@ -197,13 +197,19 @@ class predict_model:
      # split signals into chunks
      beg_samp=0
      end_samp=self.wlen
-     
+
+     # if reminder is 0, total frame is N_fr, is not will not N_fr+1
      N_fr=int((signal.shape[0]-self.wlen)/(self.wshift))
+     remainder = (signal.shape[0]-self.wlen) % (self.wshift)
+     total_fr = N_fr
+     if remainder > 0:
+      total_fr = N_fr + 1
      
 
      sig_arr=np.zeros([self.Batch_dev,self.wlen])
      #pout=Variable(torch.zeros(N_fr+1,self.class_lay[-1]).float().cuda().contiguous())
-     pout=Variable(torch.zeros(N_fr+1,self.class_lay[-1]).float().to(self.device).contiguous())
+     #pout=Variable(torch.zeros(N_fr+1,self.class_lay[-1]).float().to(self.device).contiguous())
+     pout=Variable(torch.zeros(total_fr,self.class_lay[-1]).float().to(self.device).contiguous())
      count_fr=0
      count_fr_tot=0
      while end_samp<signal.shape[0]:

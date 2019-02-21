@@ -292,13 +292,21 @@ for epoch in range(N_epochs):
      # split signals into chunks
      beg_samp=0
      end_samp=wlen
-     
+
+     # if reminder is 0, total frame is N_fr, is not will not N_fr+1
      N_fr=int((signal.shape[0]-wlen)/(wshift))
-     
+     # fix probabily bug
+     remainder = (signal.shape[0]-self.wlen) % (self.wshift)
+     total_fr = N_fr
+     if remainder > 0:
+      total_fr = N_fr + 1
+
 
      sig_arr=np.zeros([Batch_dev,wlen])
-     lab= Variable((torch.zeros(N_fr+1)+lab_batch).cuda().contiguous().long())
-     pout=Variable(torch.zeros(N_fr+1,class_lay[-1]).float().cuda().contiguous())
+     #lab= Variable((torch.zeros(N_fr+1)+lab_batch).cuda().contiguous().long())
+     #pout=Variable(torch.zeros(N_fr+1,class_lay[-1]).float().cuda().contiguous())
+     lab= Variable((torch.zeros(total_fr)+lab_batch).cuda().contiguous().long())
+     pout=Variable(torch.zeros(total_fr,class_lay[-1]).float().cuda().contiguous())
      count_fr=0
      count_fr_tot=0
      while end_samp<signal.shape[0]:
