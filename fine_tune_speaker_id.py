@@ -296,7 +296,7 @@ for epoch in range(N_epochs):
      # if reminder is 0, total frame is N_fr, is not will not N_fr+1
      N_fr=int((signal.shape[0]-wlen)/(wshift))
      # fix probabily bug
-     remainder = (signal.shape[0]-self.wlen) % (self.wshift)
+     remainder = (signal.shape[0]-wlen) % (wshift)
      total_fr = N_fr
      if remainder > 0:
       total_fr = N_fr + 1
