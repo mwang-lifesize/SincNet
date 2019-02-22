@@ -293,9 +293,11 @@ class predict_model:
      return best_user, best_prob.item()
 
 if __name__ == "__main__":
-  test_file = sys.argv[1]
+  model_file = sys.argv[1]
+  test_file = sys.argv[2]
   #pred_model = predict_model("/home/mwang/Development/deep-learning/SincNet/exp/SincNet_lifesize/model_raw.pkl.lifesize")
-  pred_model = predict_model("/home/mwang/Development/deep-learning/SincNet/model_raw.pkl.lifesize")
+  #pred_model = predict_model("/home/mwang/Development/deep-learning/SincNet/model_raw.pkl.lifesize")
+  pred_model = predict_model(model_file)
   pred_model.predict(test_file)
 
 
