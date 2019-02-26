@@ -35,6 +35,7 @@ print()
 #torch.rand(10, device=device)
 
 id_mapping = np.load("/var/www/html/record/id_mapping.npy").tolist()
+max_id = max(id_mapping)
 
 class predict_model:
 
@@ -205,10 +206,14 @@ class predict_model:
      end_samp=self.wlen
 
      # if reminder is 0, total frame is N_fr, is not will not N_fr+1
-     N_fr=int((signal.shape[0]-self.wlen)/(self.wshift))
-
-     # fix probabily bug
-     remainder = (signal.shape[0]-self.wlen) % (self.wshift)
+     if signal.shape[0] >= self.wlen:
+      N_fr=int((signal.shape[0]-self.wlen)/(self.wshift))
+      # fix probabily bug
+      remainder = (signal.shape[0]-self.wlen) % (self.wshift)
+     else:
+      N_fr = 1
+      remainder = 0
+ 
      total_fr = N_fr
      if remainder > 0:
       total_fr = N_fr + 1
@@ -282,9 +287,10 @@ class predict_model:
      #print( " sum_of_pout_for_all_chunks : ", sum_of_pout_for_all_chunks )
 
      #print("total:", torch.sum(pout_sm), ", total subtal:", torch.sum(pout_sm_sum), " should = N_fr+1:", N_fr+1 )
-     best_user = 0
+     best_user = "unknow user" 
      best_prob = sum_of_pout_for_all_chunks[best_class]
-     best_user = id_mapping[best_class.item()]
+     if best_class.item() <= max_id:
+      best_user = id_mapping[best_class.item()]
      #print( id_mapping )
      #loss_sum=loss_sum+loss.detach()
      #err_sum=err_sum+err.detach()

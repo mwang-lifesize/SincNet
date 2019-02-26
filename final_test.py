@@ -41,13 +41,17 @@ def evaludate_dir(in_dir, pred_model):
             if user == speaker_name :
               print( " predict ok")
               this_usr_correct_predict += 1
+            else:
+              print( "!!!!!!-- predict wrong")
+    
       this_usr_p = float(this_usr_correct_predict)/float(this_usr_total_predict)
       print( "predict for:", speaker_name,  " correct prob is:", this_usr_p)
       correct_predict += this_usr_correct_predict
       total_predict += this_usr_total_predict
+      #print( "correct_predict:", correct_predict,  " total_predict:", total_predict)
 
   p = float(correct_predict)/float(total_predict)
-  print( "predict for all users correct prob is:", this_usr_p)
+  print( "predict for all users correct prob is:", p)
 
 testing_data=sys.argv[1]
 testing_model=sys.argv[2]
