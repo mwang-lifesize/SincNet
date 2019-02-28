@@ -50,9 +50,9 @@ def create_batches_rnd(batch_size,data_folder,wav_lst,N_snt,wlen,lab_dict,fact_a
   snt_end=snt_beg+wlen
 
   # add some Gaussian noise? 
-  rand_noise_amp = np.random.uniform(0,0.05,1)
-  noise = np.random.normal(0, rand_noise_amp, wlen)
-  #noise = 0
+  #rand_noise_amp = np.random.uniform(0,0.05,1)
+  #noise = np.random.normal(0, rand_noise_amp, wlen)
+  noise = 0
   sig_batch[i,:]=( signal[snt_beg:snt_end] + noise )*rand_amp_arr[i]
   #sig_batch[i,:]=signal[snt_beg:snt_end]*rand_amp_arr[i]
   lab_batch[i]=lab_dict[wav_lst[snt_id_arr[i]]]
@@ -275,7 +275,7 @@ for epoch in range(N_epochs):
    with torch.no_grad():  
     # snt_te is 7464 too slow, let's hard code to be smaller
     print("starting total range:",  snt_te)
-    snt_te = min(100 , snt_te)
+    snt_te = min(400 , snt_te)
     print("reset snt_te to:",  snt_te)
     for i in range(snt_te):
      #print("starting validiation test :",  i)
