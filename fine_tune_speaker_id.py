@@ -25,6 +25,7 @@ from dnn_models import MLP,flip
 from dnn_models import SincNet as CNN 
 from data_io import ReadList,read_conf,str_to_bool
 
+import random
 
 def create_batches_rnd(batch_size,data_folder,wav_lst,N_snt,wlen,lab_dict,fact_amp):
     
@@ -276,6 +277,7 @@ for epoch in range(N_epochs):
     # snt_te is 7464 too slow, let's hard code to be smaller
     #print("starting total range:",  snt_te)
     # for fine tune, we can set to 100?
+    max_snt_te = snt_te-1
     snt_te = min(100, snt_te)
     #print("reset snt_te to:",  snt_te)
     for i in range(snt_te):
@@ -283,11 +285,11 @@ for epoch in range(N_epochs):
        
      #[fs,signal]=scipy.io.wavfile.read(data_folder+wav_lst_te[i])
      #signal=signal.astype(float)/32768
-
-     [signal, fs] = sf.read(data_folder+wav_lst_te[i])
+     real_i = random.randint(0, max_snt_te)
+     [signal, fs] = sf.read(data_folder+wav_lst_te[real_i])
 
      signal=torch.from_numpy(signal).float().cuda().contiguous()
-     lab_batch=lab_dict[wav_lst_te[i]]
+     lab_batch=lab_dict[wav_lst_te[real_i]]
     
      # split signals into chunks
      beg_samp=0
